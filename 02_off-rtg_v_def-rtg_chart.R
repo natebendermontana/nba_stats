@@ -1,46 +1,43 @@
 # Test creating an offensive eff v defensive efficiency chart
+library(here)
 library(ggthemes)
 library(tidyverse)
 library(ggrepel) 
+library(ggimage)
+
+# load data
+nba_teamboxscores <- read.csv(here("data", "nba_teamboxscores.csv"))
 
 #-------------------------------------------------------------------------------
+##  ---- off_v_def_chart
 # Offensive Efficiency v Defensive Efficiency chart
-games_played <- nba_teambox_raw %>%
+games_played <- nba_teamboxscores %>%
   group_by(team_name) %>%
   summarise(games_played = n_distinct(game_id)) %>%
   summarise(max_games = max(games_played)) %>%
   pull(max_games)
 
-nba_teambox_raw %>%
-  group_by(team_name) %>%
+nba_teamboxscores %>%
+  group_by(team_name, team_logo) %>%
   summarise(
     avg_offensive_eff = mean(offensive_efficiency, na.rm = TRUE),
-    avg_defensive_eff = mean(defensive_efficiency, na.rm = TRUE)
+    avg_defensive_eff = mean(defensive_efficiency, na.rm = TRUE),
+    .groups = "drop"
   ) %>%
   ungroup() %>%
   ggplot(aes(x = avg_offensive_eff, y = avg_defensive_eff)) +
-  geom_point(aes(color = avg_offensive_eff), size = 3, show.legend = FALSE) +
-  geom_text_repel(aes(label = team_name), size = 3, max.overlaps = 10, point.padding = unit(1, "lines")) +
-  geom_hline(yintercept = mean(nba_teambox_raw$defensive_efficiency, na.rm = TRUE),
+  geom_image(aes(image = team_logo), size = 0.08) + 
+  geom_point(aes(x = avg_offensive_eff, y = avg_defensive_eff), alpha = 0) +
+  #geom_point(aes(color = avg_offensive_eff), size = 3, show.legend = FALSE) +
+  #geom_text_repel(aes(label = team_name), size = 3, max.overlaps = 10, point.padding = unit(1, "lines")) +
+  geom_hline(yintercept = mean(nba_teamboxscores$defensive_efficiency, na.rm = TRUE),
              color = "darkgrey", linetype = "dashed", size = 0.6) +
-  geom_vline(xintercept = mean(nba_teambox_raw$offensive_efficiency, na.rm = TRUE),
+  geom_vline(xintercept = mean(nba_teamboxscores$offensive_efficiency, na.rm = TRUE),
              color = "darkgrey", linetype = "dashed", size = 0.6) +
-  annotate("text", x = Inf,
-           y = mean(nba_teambox_raw$defensive_efficiency) - .25, 
-           label = "Avg Defensive Efficiency",
-           hjust = 1.1,
-           vjust = 0,
-           size = 2.9, color = "black") +
-  annotate("text", x = mean(nba_teambox_raw$offensive_efficiency, na.rm = TRUE) - 2.5, 
-           y = -Inf, 
-           label = "Avg Offensive Efficiency", angle = 0,
-           hjust = 0,
-           vjust = 1.4,
-           size = 2.9, color = "black") +
   scale_y_reverse() +
   labs(
     title = "NBA Efficiency Landscape",
-    subtitle = paste("Over the first", games_played, "games of the '24-25 season"),
+    subtitle = paste("Over the first", games_played, "games of the '24-25 season. \n----- are league-average offensive/defensive efficiency."),
     x = "\nOffensive Efficiency",
     y = "Defensive Efficiency\n"
   ) +
@@ -63,7 +60,7 @@ total_player_stats_24_25 %>%
     y = "Three-Point Percentage\n",
     size = "Points per game"
   ) +
-  theme_fivethirtyeight() + 
+  theme_solarized() +
   theme(
     axis.title = element_text(),  # Add axis titles
     plot.title = element_text(size = 16, face = "bold")  # Center and style title

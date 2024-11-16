@@ -1,0 +1,53 @@
+---
+title: "NBA Weekly Rundown"
+author: Nate Bender
+output:
+  html_document:
+    theme: united
+    toc: true
+    toc_float: true
+date: "`r Sys.Date()`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = F)
+knitr::read_chunk('02_off-rtg_v_def-rtg_chart.R')
+
+library(here)
+library(prettydoc)
+library(ggthemes)
+library(tidyverse)
+library(ggrepel) 
+library(ggimage)
+library(tidytext)
+library(gt)
+
+nba_teamboxscores <- read.csv(here("data", "nba_teamboxscores.csv"))
+```
+
+# Efficiency Landscape
+```{r off_v_def_chart, echo=F, warning=F}
+
+```
+
+# Stats Leaders
+```{r, include=FALSE}
+knitr::read_chunk('03_key_stats_leaders.R')
+total_player_stats_24_25 <- read.csv(here("data", "total_player_stats_24_25.csv"))
+lastfive_reference <- read.csv(here("data", "lastfive_reference.csv"))
+```
+
+```{r stats_leaders_faceted, echo=F, warning=F}
+
+```
+
+```{r stats_leaders_faceted_ts, echo=F, warning=F}
+
+```
+
+# True Shooting
+```{r tsleaders_3ball, echo=F, warning=F}
+
+```
+
+

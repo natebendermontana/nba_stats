@@ -69,16 +69,20 @@ nba_playerboxscores_raw <-  load_nba_player_box(seasons = most_recent_nba_season
     )
   )
 
-
+# Player stats current season
 total_player_stats_24_25 <- nba_playerboxscores_raw %>%
   group_by(athlete_id, athlete_display_name) %>%  # Group by unique player
   summarize(
     total_points = sum(points, na.rm = TRUE),
-    games_played = n_distinct(game_id),
+    games_played = sum(ifelse(did_not_play == FALSE, 1, 0)),  # Only count games player participated in
+    team_games = n_distinct(game_id),  # Total unique team games
+    games_played_rate = games_played / team_games,
+    avg_true_shooting_pct = mean(true_shooting_pct, na.rm = TRUE),
     avg_points = total_points / games_played,
     total_three_point_attempts = sum(three_point_field_goals_attempted, na.rm = TRUE),
     total_three_point_made = sum(three_point_field_goals_made, na.rm = TRUE),
     three_point_perc = total_three_point_made / total_three_point_attempts,
+    three_point_pergame = total_three_point_attempts / games_played,
     total_rebounds = sum(rebounds, na.rm = TRUE),
     avg_rebounds = total_rebounds / games_played,
     total_assists = sum(assists, na.rm = TRUE),
@@ -86,14 +90,14 @@ total_player_stats_24_25 <- nba_playerboxscores_raw %>%
     total_steals = sum(steals, na.rm = TRUE),
     avg_steals = total_steals / games_played,
     total_blocks = sum(blocks, na.rm = TRUE),
-    avg_blocks = total_blocks / games_played)
+    avg_blocks = total_blocks / games_played) %>% 
+  ungroup()
 
 #-------------------------------------------------------------------------------
 # player box scores - last five years
 current_season <- most_recent_nba_season()  # Get current season (e.g., 2024)
 previous_five_seasons <- (current_season - 5):(current_season - 1)  # Last five seasons
 
-# Load player box scores for the last five seasons
 nba_playerboxscores_lastfive_raw <- load_nba_player_box(seasons = previous_five_seasons) %>%
   mutate(
     # If the player did not play, set TS% to NA
